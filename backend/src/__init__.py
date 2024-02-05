@@ -12,7 +12,8 @@ def create_app(test_config=None):
     load_dotenv()
 
     # create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__)
+    
     app.config.from_object(Config)
 
     #app.config.from_mapping(
@@ -22,7 +23,6 @@ def create_app(test_config=None):
 
     # register the routes
     app.register_blueprint(bard_blueprint, url_prefix='/api')
-
     return app
 
 app = create_app()
