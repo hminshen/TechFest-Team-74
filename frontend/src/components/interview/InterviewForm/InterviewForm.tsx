@@ -1,47 +1,86 @@
-import { useState, useEffect } from 'react';
-import { PreInterviewFormType, Question } from '../types';
+import { useEffect, useState } from 'react';
 import {
-    TextField,
-    TextareaAutosize,
     Button,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    Chip,
-    Autocomplete,
     Container
   } from '@mui/material';
-import bardService from '../../../services/bard';
-import { PreInterviewFormDiv, PreInterviewFormrH1 } from './style';
-import { useRouter } from 'next/router';
 import InterviewQuestion from '../InterviewQuestion/InterviewQuestion';
 import { useQuestionContext } from '../../context/QuestionContext';
+import { usePreInterviewInfoContext } from '../../context/PreInterviewContext';
+import bardService from '../../../services/bard';
+import router from 'next/router';
+import merge from 'lodash';
+import { useFeedbackContext } from '../../context/FeedbackContext';
+import { PostInterviewFormType } from '../types';
 
+function mergeDeep(target, source) {
+  for (const key in source) {
+    if (typeof source[key] === 'object' && source[key] !== null) {
+      target[key] = mergeDeep(target[key] || {}, source[key]);
+    } else {
+      target[key] = source[key];
+    }
+  }
+  return target;
+}
 const InterviewForm = () => {
-    const {questions, setQuestions} = useQuestionContext();
-    
-      const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-      const [userResponses, setUserResponses] = useState([]);
-    
-      const handleAnswer = (answer) => {
-        setUserResponses([...userResponses, answer]);
-    
-        if (currentQuestionIndex < questions.length - 1) {
-          setCurrentQuestionIndex(currentQuestionIndex + 1);
-        }
+      const {questions, setQuestions} = useQuestionContext();
+      /*
+      const questions = [
+        {"question":"Tell me about a project you've worked on that involved collecting and processing data.", "type":"behavioral"},
+        {"question":"Describe your experience with developing and implementing APIs.", "type":"technical"},
+        {"question":"How do you approach the task of designing software for maintainability and scalability?", "type":"technical"},
+        {"question":"Can you walk me through your understanding of containerization technologies like Docker?", "type":"technical"},
+        {"question":"Do you have any experience with stream processing technologies like Kafka?", "type":"technical"},
+        {"question":"What is your experience with designing and developing software in a test-driven environment?", "type":"technical"},     
+        {"question":"Tell me about a time you had to collaborate with others to achieve a common goal.", "type":"behavioral"},
+        {"question":"Why are you interested in working at DSTA's Information Programme Centre?", "type":"motivational"},
+        {"question":"What are your salary expectations?", "type":"negotiation"},
+        {"question":"Do you have any questions for me?", "type":"meta"}
+      ];*/
+      const { preInterviewInfo, setPreInterviewInfo } = usePreInterviewInfoContext();
+      const { feedback, setFeedback } = useFeedbackContext();
+      const [userResponses, setUserResponses] = useState(Array(questions.length).join(".").split("."));
+
+      const handleAnswer = (answer, index) => {
+        setUserResponses((prevResponses) => {
+          const updatedResponses = [...prevResponses];
+          updatedResponses[index] = answer;
+          return updatedResponses;
+        });
       };
     
-      const handleInterviewCompletion = () => {
+      const handleInterviewCompletion = async () => {
         console.log('Interview Completed!');
-        console.log('User Responses:', userResponses);
-    
+
         const interviewData = questions.reduce((acc, question, index) => {
           acc[question.question] = userResponses[index];
           return acc;
         }, {});
-    
-        console.log('Interview Data (JSON):', JSON.stringify(interviewData, null, 2));
+
+        const final_interview_data = interviewData
+
+        console.log(final_interview_data);
+        const consolidatedRequest : PostInterviewFormType = {
+          "pre_info": mergeDeep({}, preInterviewInfo),
+          "interview_answers": mergeDeep({}, final_interview_data),
+        }
+        console.log("consolidatedRequest")
+        console.log(consolidatedRequest);
+        try {
+          // Make an API call to sign out
+          const response = await bardService.getFeedback(consolidatedRequest)
+          .then((res) => {
+              setFeedback(res);
+              console.log("Feedback:" + feedback);
+              router.push('/feedback');
+          }).catch((err) => {
+              console.error('Error retrieving feedback:' + err);
+          });
+      } catch (error) {
+          // Handle any network or API call errors
+          console.error('API call error:', error);
+      }
+
       };
     
       return (
@@ -51,13 +90,14 @@ const InterviewForm = () => {
             <div>
               {questions.map((question, index) => (
                 <InterviewQuestion
-                  key={index}
+                  key={`question_${index}`}
+                  index={index}
                   question={question.question}
-                  onAnswer={(answer) => handleAnswer(answer)}
+                  onAnswer={(answer) => handleAnswer(answer,index)}
                 />
               ))}
             </div>
-            {currentQuestionIndex >= questions.length -1 && (
+            { (
               <div style={{ textAlign: 'center', marginTop: '20px' }}>
                 <Button
                   variant="contained"
@@ -74,36 +114,3 @@ const InterviewForm = () => {
     };
 
 export default InterviewForm;
-
-
-const top30skills = [
-    { "name": "Python programming" },
-    { "name": "Data analysis" },
-    { "name": "Machine learning" },
-    { "name": "JavaScript" },
-    { "name": "React.js" },
-    { "name": "Node.js" },
-    { "name": "SQL" },
-    { "name": "HTML" },
-    { "name": "CSS" },
-    { "name": "Java" },
-    { "name": "C++" },
-    { "name": "Git" },
-    { "name": "Docker" },
-    { "name": "AWS" },
-    { "name": "RESTful API" },
-    { "name": "Linux" },
-    { "name": "Redux" },
-    { "name": "Vue.js" },
-    { "name": "Angular" },
-    { "name": "Firebase" },
-    { "name": "TensorFlow" },
-    { "name": "PyTorch" },
-    { "name": "HTML5" },
-    { "name": "SASS/SCSS" },
-    { "name": "TypeScript" },
-    { "name": "GraphQL" },
-    { "name": "Kubernetes" },
-    { "name": "Jenkins" },
-    { "name": "Blockchain" }
-  ]
