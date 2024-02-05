@@ -12,9 +12,3 @@ export interface Question {
   question: string;
   type: string;
 }
-
-export interface PostInterviewFormType {
-  [key: string]: {
-    [key: string]: any;
-  };
-}

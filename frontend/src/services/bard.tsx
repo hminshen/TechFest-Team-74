@@ -1,3 +1,4 @@
+import { PostInterviewFormType } from '../components/interview/types';
 import { PreInterviewFormType } from '../components/preInterview/types';
 import axiosInstance from '../utils/axios'
 
@@ -14,6 +15,22 @@ import axiosInstance from '../utils/axios'
         };
         console.log(createdInfoItem);
       const response = await axiosInstance.post(`/bard/getQuestions`,createdInfoItem)
+            .then((res) => {
+                return JSON.parse(res.data);
+          }).catch((error) => {
+              console.log("Getting questions from Bard failed: " + error);
+          })
+      return response;
+  
+      }
+    catch (error) {
+      console.log("Error:" + error);
+    }
+  };
+
+  const getFeedback = async (item : PostInterviewFormType) => {
+    try {
+      const response = await axiosInstance.post(`/bard/getFeedback`,item)
             .then((res) => {
                 return JSON.parse(res.data);
           }).catch((error) => {
@@ -44,7 +61,8 @@ import axiosInstance from '../utils/axios'
   };
 const bardService = {
   getQuestions,
-  testBard
+  testBard,
+  getFeedback
 };
 
 export { bardService as default };
