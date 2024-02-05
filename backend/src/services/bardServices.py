@@ -9,5 +9,6 @@ class BardService:
 
         # Send an API request and get a response.
         response = bardapi.core.Bard(token).get_answer(input_text)
+        print(response)
         return response["content"]
     

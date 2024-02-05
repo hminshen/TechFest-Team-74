@@ -14,9 +14,11 @@ import {
 import bardService from '../../../services/bard';
 import { PreInterviewFormDiv, PreInterviewFormrH1 } from './style';
 import { useRouter } from 'next/router';
+import { useQuestionContext } from '../../context/QuestionContext';
 
 const PreInterviewForm = () => {
     const router = useRouter();
+    const { questions, setQuestions } = useQuestionContext();
     const [formData, setFormData] = useState<PreInterviewFormType>({ 
         job_type: '',
         experience_level: '',
@@ -57,10 +59,9 @@ const PreInterviewForm = () => {
             // Make an API call to sign out
             const response = await bardService.getQuestions(formData)
             .then((res) => {
-                console.log("Success");
-                console.log(res);
-                //router.push('/home');
-                //router.reload();
+                setQuestions(res["questions"]);
+                console.log("Questions:" + questions);
+                router.push('/interview');
             }).catch((err) => {
                 console.error('Error retrieving questions:' + err);
             });

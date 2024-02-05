@@ -19,10 +19,21 @@ class BardController:
         focus_areas = "\nFocus Areas: " + str(pre_interview_info.get('focus_areas', []))
         interview_info = "\n--Start Of Info--\n" + job_type + experience_level + skills + job_description + resume + cover_letter + focus_areas + "\n--End Of Info--\n"
         
+        # Target Format of the Response:
+        json_format_res = """\n\nCan you give me the questions in the form of json format? I want the answer that you provide me to only follow this format:\n{
+  "questions": [
+    {"question": "Tell me about a project you've worked on that involved collecting and processing data.", "type": "behavioral"},
+    {"question": "How do you approach the task of designing software for maintainability and scalability?", "type": "technical"},
+    {"question": "Why are you interested in working at DSTA's Information Programme Centre?", "type": "motivational"},
+    {"question": "What are your salary expectations?", "type": "negotiation"},
+    {"question": "Do you have any questions for me?", "type": "meta"}
+  ]
+}\n"""
+
         # Crafting the prompt:
         before = "I would like you to conduct a mock job interview with me, where i give you some information and you craft questions based on the information. You will get my answers and give me honest feedback. The information is below:\n"
-        after = "\n\nCan you give me the questions in the form of json format? Without any leading text before and after. I want your whole message to just be the json, without any greetings etc"
-        pre_interview_prompt =  before + interview_info + after
+        after = "\nWithout any leading text before and after. I want your whole message to just be the json, without any greetings etc"
+        pre_interview_prompt =  before + interview_info + json_format_res + after
         print(pre_interview_prompt)
         
         ## print("Question Prompt:", pre_interview_prompt)
